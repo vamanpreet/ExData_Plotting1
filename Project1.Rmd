@@ -1,0 +1,121 @@
+---
+title: "Project1"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Download the dataset
+
+```{r}
+# Specify the URL of the dataset and the destination file name
+url <- "https://d396qusza40orc.cloudfront.net/exdata%2Fdata%2Fhousehold_power_consumption.zip"
+destfile <- "household_power_consumption.zip"
+
+# Download the file
+download.file(url, destfile, method = "curl")
+
+# Unzip the downloaded file
+unzip(destfile)
+
+```
+
+## Load the data set
+
+```{r}
+# Load necessary libraries
+library(data.table)
+library(dplyr)
+
+# Read data, and handle missing values
+data <- fread("household_power_consumption.txt", na.strings = "?", 
+              sep = ";", stringsAsFactors = FALSE)
+
+# Convert Date column to Date format and filter for specified dates
+data$Date <- as.Date(data$Date, format = "%d/%m/%Y")
+data <- data %>%
+  filter(Date == as.Date("2007-02-01") | Date == as.Date("2007-02-02"))
+
+# Combine Date and Time into a Datetime column
+data$Datetime <- as.POSIXct(paste(data$Date, data$Time))
+
+```
+
+## Plot 1
+
+```{r}
+# Open PNG device
+png("plot1.png", width = 480, height = 480)
+
+# Plot histogram
+hist(data$Global_active_power, col = "red", main = "Global Active Power", 
+     xlab = "Global Active Power (kilowatts)")
+
+# Close the device
+dev.off()
+
+```
+
+## Plot 2
+```{r}
+# Open PNG device
+png("plot2.png", width = 480, height = 480)
+
+# Plot time series of Global Active Power
+plot(data$Datetime, data$Global_active_power, type = "l", 
+     xlab = "", ylab = "Global Active Power (kilowatts)")
+
+# Close the device
+dev.off()
+
+```
+
+## Plot 3
+```{r}
+# Open PNG device
+png("plot3.png", width = 480, height = 480)
+
+# Plot Sub_metering data
+plot(data$Datetime, data$Sub_metering_1, type = "l", xlab = "", ylab = "Energy sub metering")
+lines(data$Datetime, data$Sub_metering_2, col = "red")
+lines(data$Datetime, data$Sub_metering_3, col = "blue")
+
+# Add legend
+legend("topright", legend = c("Sub_metering_1", "Sub_metering_2", "Sub_metering_3"), 
+       col = c("black", "red", "blue"), lty = 1)
+
+# Close the device
+dev.off()
+
+```
+
+## Plot 4
+```{r}
+# Open PNG device
+png("plot4.png", width = 480, height = 480)
+
+# Set up 2x2 layout
+par(mfrow = c(2, 2))
+
+# Plot 1
+plot(data$Datetime, data$Global_active_power, type = "l", xlab = "", ylab = "Global Active Power")
+
+# Plot 2
+plot(data$Datetime, data$Voltage, type = "l", xlab = "datetime", ylab = "Voltage")
+
+# Plot 3
+plot(data$Datetime, data$Sub_metering_1, type = "l", xlab = "", ylab = "Energy sub metering")
+lines(data$Datetime, data$Sub_metering_2, col = "red")
+lines(data$Datetime, data$Sub_metering_3, col = "blue")
+legend("topright", legend = c("Sub_metering_1", "Sub_metering_2", "Sub_metering_3"),
+       col = c("black", "red", "blue"), lty = 1, bty = "n")
+
+# Plot 4
+plot(data$Datetime, data$Global_reactive_power, type = "l", xlab = "datetime", ylab = "Global Reactive Power")
+
+# Close the device
+dev.off()
+
+```
